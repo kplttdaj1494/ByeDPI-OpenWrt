@@ -30,7 +30,7 @@ jobs:
         shell: bash
         run : |
           TAG=$(wget -qO- --header="Authorization: token $GH_TOKEN" http://api.github.com/repos/hufrea/byedpi/releases/latest | grep -Po '"tag_name": "\K.*?(?=")')
-          sed "s|@VERSION@|${TAG/v}|" -i byedpi/Makefile
+          sed "s|@VERSION@|${TAG/v}|" -i byedpi/Makefile -j1 V=s
           echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Build package
