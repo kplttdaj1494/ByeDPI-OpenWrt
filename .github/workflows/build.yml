@@ -28,7 +28,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
-        run : |
+        run: |
           TAG=$(wget -qO- --header="Authorization: token $GH_TOKEN" http://api.github.com/repos/hufrea/byedpi/releases/latest | grep -Po '"tag_name": "\K.*?(?=")')
           sed "s|@VERSION@|${TAG/v}|" -i byedpi/Makefile
           echo "tag=$TAG" >> $GITHUB_OUTPUT
@@ -47,6 +47,13 @@ jobs:
           ./scripts/feeds install -a -p byedpi
           make defconfig
           make package/byedpi/compile V=s -j$(nproc) BUILD_LOG=1
+
+      - name: Disable signed packages
+        run: |
+          echo "CONFIG_SIGNED_PACKAGES=n" >> .config
+
+      - name: Generate package index
+        run: |
           echo "$SIGN_KEY" | base64 -d > key-build
           make package/index V=s -j$(nproc) BUILD_LOG=1
           tar -C ./bin/packages/*/byedpi -cvf ipk-$BRANCH-$ARCH.tar --transform "s|^\./|${BRANCH/openwrt-}/$ARCH/|" --show-transformed-names .
